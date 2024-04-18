@@ -6,8 +6,6 @@
 #include <sstream>
 #include<filesystem>
 
-#include <lib/lr1.h>
-
 int main() {
     //std::vector<int> arr = { -100 };//{10, 14, 15, 20, 21, 25, 30};
     //Res output = countAndSum(arr);

@@ -18,6 +18,7 @@ Protocol* Doctor::visit(Patient* patient, Registry* r) {
 	p->doctor = this;
 	p->patient = patient;
 	rec->add(p);
+	this->energy -= 1;
 	return p;
 }
 

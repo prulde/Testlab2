@@ -69,6 +69,7 @@ TEST_F(LR2T, TestDoctor)
 	Doctor* doc = new Doctor("doc1", false, 10);
 	std::vector<Doctor*> docs;
 	docs.push_back(doc);
+	doc->energy = 10;
 
 
 	std::vector<std::string> complaints;
@@ -96,7 +97,7 @@ TEST_F(LR2T, TestDoctor)
 
 	EXPECT_EQ(doc->full_name, "doc1");
 	EXPECT_EQ(doc->on_vacation, false);
-	EXPECT_EQ(doc->energy, 10);
+	EXPECT_EQ(doc->energy, 9);
 	EXPECT_EQ(prot->complaints, complaints);
 }
 
@@ -435,4 +436,462 @@ TEST_F(LR2T, TestCase3)
 	EXPECT_EQ(a1, an1);
 	EXPECT_EQ(lab1, lab);
 	EXPECT_EQ(pat->card->money, 90);
+}
+
+TEST_F(LR2T, TestModel1)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 100;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	EXPECT_EQ(r->make_an_appointment(pat), (Doctor*)NULL);
+}
+
+TEST_F(LR2T, TestModel2)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 9;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+
+	EXPECT_EQ(r->make_an_appointment(pat), (Doctor*)NULL);
+	EXPECT_EQ(pat->card->money, -1);
+}
+
+TEST_F(LR2T, TestModel3)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 100;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Doctor* doc = r->make_an_appointment(pat);
+	Protocol* proto = doc->visit(pat, r);
+	pat->protocol = proto;
+
+	EXPECT_EQ(doc->full_name, "doc1");
+	EXPECT_EQ(r->patient_record(pat)->protocols.size(), 1);
+	EXPECT_EQ(r->patient_record(pat)->protocols[0]->complaints, complaints);
+	EXPECT_EQ(pat->protocol, proto);
+	EXPECT_EQ(pat->card->money, 90);
+}
+
+TEST_F(LR2T, TestModel4)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 100;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	//staff.push_back(new MedStaff("doc1", false, 10));
+	//staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Procedure* pr1 = r->procedures[0];
+
+	EXPECT_EQ(r->make_an_appointment(pat, pr1), (TreatmentRoom*)NULL);
+}
+
+TEST_F(LR2T, TestModel5)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 9;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Procedure* pr1 = r->procedures[0];
+
+	EXPECT_EQ(r->make_an_appointment(pat, pr1), (TreatmentRoom*)NULL);
+	EXPECT_EQ(pat->card->money,-1);
+}
+
+TEST_F(LR2T, TestModel6)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 11;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Procedure* pr1 = r->procedures[0];
+
+	EXPECT_EQ(r->make_an_appointment(pat, pr1), room);
+	EXPECT_EQ(pat->card->money, 1);
+}
+
+TEST_F(LR2T, TestModel7)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 100;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	//staff.push_back(new MedStaff("doc1", false, 10));
+	//staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Analysis* a1 = r->analyzes[0];
+
+	EXPECT_EQ(r->make_an_appointment(pat,a1), (Laboratory*)NULL);;
+}
+
+TEST_F(LR2T, TestModel8)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 9;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Analysis* a1 = r->analyzes[0];
+
+	EXPECT_EQ(a1, an1);
+	EXPECT_EQ(r->make_an_appointment(pat,a1), (Laboratory*)NULL);
+	EXPECT_EQ(pat->card->money, -1);
+}
+
+TEST_F(LR2T, TestModel9)
+{
+	BankCard* card = new BankCard();
+	card->cvc = 111;
+	card->bank = "bank";
+	card->money = 11;
+	card->number = 111222;
+
+	Procedure* proc1 = new Procedure();
+	proc1->price = 10;
+	std::vector<Procedure*> proc;
+	proc.push_back(proc1);
+
+	Analysis* an1 = new Analysis();
+	an1->price = 10;
+	std::vector<Analysis*> an;
+	an.push_back(an1);
+
+	std::vector<Doctor*> docs;
+	docs.push_back(new Doctor("doc1", false, 10));
+
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	MedRecord* p = new MedRecord(pat);
+	std::map<Patient*, MedRecord*> ma = std::map<Patient*, MedRecord*>();
+	ma.insert(std::pair<Patient*, MedRecord*>(pat, p));
+	pat->card = card;
+
+	Laboratory* lab = new Laboratory();
+	std::vector<MedStaff*> staff;
+	staff.push_back(new MedStaff("doc1", false, 10));
+	staff.push_back(new MedStaff("doc2", false, 10));
+
+	TreatmentRoom* room = new TreatmentRoom();
+	room->med_staff = staff;
+	lab->med_staff = staff;
+
+	Registry* r = new Registry(room, lab, docs, ma);
+	r->analyzes = an;
+	r->procedures = proc;
+	r->price = 10;
+
+	Analysis* a1 = r->analyzes[0];
+
+	EXPECT_EQ(r->make_an_appointment(pat,a1), lab);
+	EXPECT_EQ(pat->card->money, 1);
 }

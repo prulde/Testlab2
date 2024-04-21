@@ -32,6 +32,7 @@ public:
 	std::string full_name;
 	std::vector<std::string> complaints;
 	Protocol* protocol;
+	BankCard* card;
 
 	Patient(const std::string &name, std::vector<std::string> complaints);
 };

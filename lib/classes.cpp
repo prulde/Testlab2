@@ -17,6 +17,7 @@ Protocol* Doctor::visit(Patient* patient, Registry* r) {
 	p->complaints = patient->complaints;
 	p->doctor = this;
 	p->patient = patient;
+	rec->add(p);
 	return p;
 }
 
@@ -28,21 +29,28 @@ Registry::Registry(TreatmentRoom* t, Laboratory* lab, std::vector<Doctor*> d, st
 Doctor* Registry::make_an_appointment(Patient* p) {
 	Doctor* d = NULL;
 	for (Doctor* s : doctors) {
-		if (s->energy > 0 && s->on_vacation == false && s->energy>0) {
+		if (s->energy > 0 && s->on_vacation == false) {
 			d = s;
 		}
 	}
+	p->card->money -= this->price;
+	if (p->card->money < 0)
+		return NULL;
+
 	return d;
 }
 
 TreatmentRoom* Registry::make_an_appointment(Patient* p, Procedure* procedure) {
 	bool one = false;
 	for (MedStaff* s : t_room->med_staff) {
-		if (s->energy > 0 && s->on_vacation == false && s->energy > 0) {
+		if (s->energy > 0 && s->on_vacation == false) {
 			one = true;
 		}
 	}
 	if (!one)
+		return NULL;
+	p->card->money -= procedure->price;
+	if (p->card->money < 0)
 		return NULL;
 
 	return t_room;
@@ -56,6 +64,9 @@ Laboratory* Registry::make_an_appointment(Patient* p, Analysis* a) {
 		}
 	}
 	if (!one)
+		return NULL;
+	p->card->money -= a->price;
+	if (p->card->money < 0)
 		return NULL;
 
 	return lab;

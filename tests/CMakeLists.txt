@@ -20,7 +20,7 @@ add_executable(
 
 target_link_libraries(
     lr1_tests
-    lr1_lib
+    lr2_lib
     GTest::gtest_main
 )
 

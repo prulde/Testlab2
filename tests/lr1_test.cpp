@@ -114,10 +114,10 @@ TEST_F(LR2T, TestAnalysis)
 TEST_F(LR2T, TestProcedure)
 {
 	Procedure* p = new Procedure();
-	p->name = "s";
+	p->name = Massage;
 	p->price = 10;
 
-	EXPECT_EQ(p->name, "s");
+	EXPECT_EQ(p->name, Massage);
 	EXPECT_EQ(p->price, 10);
 }
 
@@ -203,6 +203,16 @@ TEST_F(LR2T, TestLab)
 
 TEST_F(LR2T, TestRoom)
 {
+	std::vector<std::string> complaints;
+	complaints.push_back("complaint1");
+	complaints.push_back("complaint2");
+
+	Patient* pat = new Patient("p1", complaints);
+	Procedure* proc1 = new Procedure();
+	proc1->name = Massage;
+	Procedure* proc2 = new Procedure();
+	proc2->name = Injection;
+
 	std::vector<MedStaff*> staff;
 	staff.push_back(new MedStaff("doc1", false, 10));
 	staff.push_back(new MedStaff("doc2", false, 10));
@@ -211,6 +221,8 @@ TEST_F(LR2T, TestRoom)
 	room->med_staff = staff;
 
 	EXPECT_EQ(room->med_staff, staff);
+	EXPECT_EQ(room->perform(pat,proc1), true);
+	EXPECT_EQ(room->perform(pat, proc2), true);
 }
 
 TEST_F(LR2T, TestRegistry)

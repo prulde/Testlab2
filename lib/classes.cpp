@@ -2,6 +2,12 @@
 
 // Patient
 Patient::Patient(const std::string& full_name, std::vector<std::string> complaints) :full_name(full_name), complaints(complaints){}
+bool Patient::pay(int price) {
+	this->card->money -= price;
+	if (this->card->money < 0)
+		return false;
+	return true;
+}
 
 // MedRecord
 MedRecord::MedRecord(Patient* patient) :patient(patient){}
@@ -34,11 +40,29 @@ Doctor* Registry::make_an_appointment(Patient* p) {
 			d = s;
 		}
 	}
-	p->card->money -= this->price;
-	if (p->card->money < 0)
+	if (!p->pay(this->price))
 		return NULL;
 
 	return d;
+}
+
+bool TreatmentRoom::perform(Patient* p, Procedure* proc) {
+	MedStaff* staff;
+	for (MedStaff* s : this->med_staff) {
+		if (s->energy > 0 && s->on_vacation == false) {
+			staff = s;
+			break;
+		}
+	}
+	if (proc->name == Massage) {
+		staff->massage(p);
+		return true;
+	}
+	else if (proc->name == Injection) {
+		staff->injection(p);
+		return true;
+	}
+	return false;
 }
 
 TreatmentRoom* Registry::make_an_appointment(Patient* p, Procedure* procedure) {
@@ -50,8 +74,7 @@ TreatmentRoom* Registry::make_an_appointment(Patient* p, Procedure* procedure) {
 	}
 	if (!one)
 		return NULL;
-	p->card->money -= procedure->price;
-	if (p->card->money < 0)
+	if (!p->pay(this->price))
 		return NULL;
 
 	return t_room;
@@ -66,8 +89,7 @@ Laboratory* Registry::make_an_appointment(Patient* p, Analysis* a) {
 	}
 	if (!one)
 		return NULL;
-	p->card->money -= a->price;
-	if (p->card->money < 0)
+	if (!p->pay(this->price))
 		return NULL;
 
 	return lab;

@@ -12,8 +12,13 @@ struct BankCard
 	int number;
 };
 
+enum ProcedureType {
+	Injection = 1,
+	Massage = 2
+};
+
 struct Procedure {
-	std::string name;
+	ProcedureType name;
 	int price;
 };
 
@@ -35,6 +40,7 @@ public:
 	BankCard* card;
 
 	Patient(const std::string &name, std::vector<std::string> complaints);
+	bool pay(int price);
 };
 
 struct Protocol
@@ -73,6 +79,8 @@ public:
 	int energy;
 
 	MedStaff(const std::string& full_name, bool on_vacation, int energy);
+	void massage(Patient* p) {};
+	void injection(Patient* p) {};
 };
 
 class TreatmentRoom {
@@ -80,7 +88,7 @@ public:
 	std::vector<MedStaff*> med_staff;
 
 	TreatmentRoom() = default;
-	void perform(Patient* patient, Procedure* procedure) {};
+	bool perform(Patient* patient, Procedure* procedure);
 };
 
 class Laboratory {
